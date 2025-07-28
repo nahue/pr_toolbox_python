@@ -1,0 +1,5 @@
+<ul class="space-y-2">
+    {% for user in items %}
+        <li class="bg-white border border-gray-200 rounded-lg px-4 py-3 shadow-sm"> {{user.first_name}} {{user.last_name}}</li>
+    {% endfor %}
+</ul>

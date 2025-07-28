@@ -1,0 +1,264 @@
+<!-- PR Description Result -->
+<div class="bg-white shadow rounded-lg">
+    <div class="px-4 py-5 sm:p-6">
+        <!-- Header with Actions -->
+        <div class="flex items-center justify-between mb-6">
+            <div>
+                <h3 class="text-lg font-semibold leading-6 text-gray-900">Generated PR Description</h3>
+                <p class="mt-1 text-sm text-gray-500">AI-powered description based on GitHub PR data</p>
+            </div>
+            <div class="flex space-x-3">
+                <button onclick="copyToClipboard('generated-description')" 
+                        class="inline-flex items-center gap-x-1.5 rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
+                    <svg class="-ml-0.5 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                    </svg>
+                    Copy
+                </button>
+                <button onclick="savePRDescription()" 
+                        class="inline-flex items-center gap-x-1.5 rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
+                    <svg class="-ml-0.5 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path>
+                    </svg>
+                    Save
+                </button>
+            </div>
+        </div>
+
+        <!-- GitHub Data Summary -->
+        <div class="bg-gray-50 rounded-lg p-4 mb-6">
+            <h4 class="text-sm font-medium leading-6 text-gray-900 mb-3">GitHub PR Details</h4>
+            <dl class="grid grid-cols-1 gap-x-4 gap-y-3 sm:grid-cols-2">
+                <div class="sm:col-span-1">
+                    <dt class="text-sm font-medium text-gray-500">Title</dt>
+                    <dd class="mt-1 text-sm text-gray-900">{{ title }}</dd>
+                </div>
+                <div class="sm:col-span-1">
+                    <dt class="text-sm font-medium text-gray-500">Repository</dt>
+                    <dd class="mt-1 text-sm text-gray-900">{{ repository }}</dd>
+                </div>
+                <div class="sm:col-span-1">
+                    <dt class="text-sm font-medium text-gray-500">Type</dt>
+                    <dd class="mt-1">
+                        <span class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset 
+                            {% if pr_type == 'feature' %}bg-green-50 text-green-700 ring-green-600/20
+                            {% elif pr_type == 'bugfix' %}bg-red-50 text-red-700 ring-red-600/20
+                            {% elif pr_type == 'docs' %}bg-blue-50 text-blue-700 ring-blue-600/20
+                            {% elif pr_type == 'refactor' %}bg-purple-50 text-purple-700 ring-purple-600/20
+                            {% else %}bg-gray-50 text-gray-600 ring-gray-500/10{% endif %}">
+                            {{ pr_type|title }}
+                        </span>
+                    </dd>
+                </div>
+                <div class="sm:col-span-1">
+                    <dt class="text-sm font-medium text-gray-500">Priority</dt>
+                    <dd class="mt-1">
+                        <span class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset
+                            {% if priority == 'high' %}bg-orange-50 text-orange-700 ring-orange-600/20
+                            {% elif priority == 'urgent' %}bg-red-50 text-red-700 ring-red-600/20
+                            {% elif priority == 'low' %}bg-gray-50 text-gray-600 ring-gray-500/10
+                            {% else %}bg-yellow-50 text-yellow-800 ring-yellow-600/20{% endif %}">
+                            {{ priority|title }}
+                        </span>
+                    </dd>
+                </div>
+                {% if assignee %}
+                <div class="sm:col-span-1">
+                    <dt class="text-sm font-medium text-gray-500">Assignee</dt>
+                    <dd class="mt-1 text-sm text-gray-900">@{{ assignee }}</dd>
+                </div>
+                {% endif %}
+                <div class="sm:col-span-1">
+                    <dt class="text-sm font-medium text-gray-500">Files Changed</dt>
+                    <dd class="mt-1 text-sm text-gray-900">{{ github_data.changed_files }}</dd>
+                </div>
+            </dl>
+        </div>
+
+        <!-- Original Description -->
+        {% if description %}
+        <div class="mb-6">
+            <h4 class="text-sm font-medium leading-6 text-gray-900 mb-3">Original Description</h4>
+            <div class="bg-gray-50 rounded-lg p-4 text-sm text-gray-700 max-h-32 overflow-y-auto ring-1 ring-inset ring-gray-200">
+                {{ description }}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Generated Description with Markdown Preview -->
+        <div class="mb-6">
+            <h4 class="text-sm font-medium leading-6 text-gray-900 mb-3">AI-Generated Description</h4>
+            
+            <!-- Tabs -->
+            <div class="border-b border-gray-200 mb-4">
+                <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+                    <button onclick="switchTab('raw')" 
+                            id="raw-tab"
+                            class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm tab-button active">
+                        Raw Markdown
+                    </button>
+                    <button onclick="switchTab('preview')" 
+                            id="preview-tab"
+                            class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm tab-button">
+                        Preview
+                    </button>
+                </nav>
+            </div>
+
+            <!-- Tab Content -->
+            <div id="raw-content" class="tab-content">
+                <div id="generated-description" class="bg-blue-50 rounded-lg p-4 text-sm text-gray-900 whitespace-pre-wrap ring-1 ring-inset ring-blue-200 font-mono">
+                    {{ generated_description }}
+                </div>
+            </div>
+
+            <div id="preview-content" class="tab-content hidden">
+                <div class="bg-white rounded-lg p-4 text-sm text-gray-900 ring-1 ring-inset ring-gray-200 min-h-[200px] markdown-preview">
+                    <!-- Markdown preview will be rendered here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex items-center justify-end space-x-3 pt-4 border-t border-gray-200">
+            <button onclick="regenerateDescription()" 
+                    class="rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
+                Regenerate
+            </button>
+            <button onclick="editDescription()" 
+                    class="rounded-md bg-white px-3 py-2 text-sm font-semibold text-blue-600 shadow-sm ring-1 ring-inset ring-blue-300 hover:bg-blue-50">
+                Edit
+            </button>
+            <button onclick="useDescription()" 
+                    class="rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+                Use This Description
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+function copyToClipboard(elementId) {
+    const element = document.getElementById(elementId);
+    const text = element.textContent || element.innerText;
+    
+    navigator.clipboard.writeText(text).then(() => {
+        // Show success message
+        const button = event.target.closest('button');
+        const originalText = button.textContent.trim();
+        const originalHTML = button.innerHTML;
+        
+        button.innerHTML = `
+            <svg class="-ml-0.5 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+            </svg>
+            Copied!
+        `;
+        button.classList.remove('text-gray-900', 'ring-gray-300', 'hover:bg-gray-50');
+        button.classList.add('text-green-700', 'ring-green-600', 'bg-green-50');
+        
+        setTimeout(() => {
+            button.innerHTML = originalHTML;
+            button.classList.remove('text-green-700', 'ring-green-600', 'bg-green-50');
+            button.classList.add('text-gray-900', 'ring-gray-300', 'hover:bg-gray-50');
+        }, 2000);
+    }).catch(err => {
+        console.error('Failed to copy text: ', err);
+    });
+}
+
+function savePRDescription() {
+    // TODO: Implement save functionality
+    alert('Save functionality will be implemented');
+}
+
+function regenerateDescription() {
+    // TODO: Implement regenerate functionality
+    alert('Regenerate functionality will be implemented');
+}
+
+function editDescription() {
+    // TODO: Implement edit functionality
+    alert('Edit functionality will be implemented');
+}
+
+function useDescription() {
+    // TODO: Implement use description functionality
+    alert('Use description functionality will be implemented');
+}
+
+// Initialize the page with raw tab active
+document.addEventListener('DOMContentLoaded', function() {
+    // Set initial tab state
+    const rawTab = document.getElementById('raw-tab');
+    rawTab.classList.remove('border-transparent', 'text-gray-500');
+    rawTab.classList.add('border-blue-500', 'text-blue-600');
+});
+
+// Simple markdown renderer
+function renderMarkdown(markdown) {
+    return markdown
+        // Headers
+        .replace(/^### (.*$)/gim, '<h3 class="text-lg font-semibold text-gray-900 mt-4 mb-2">$1</h3>')
+        .replace(/^## (.*$)/gim, '<h2 class="text-xl font-semibold text-gray-900 mt-6 mb-3">$1</h2>')
+        .replace(/^# (.*$)/gim, '<h1 class="text-2xl font-bold text-gray-900 mt-6 mb-4">$1</h1>')
+        
+        // Bold and italic
+        .replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold">$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em class="italic">$1</em>')
+        
+        // Code blocks
+        .replace(/```([\s\S]*?)```/g, '<pre class="bg-gray-100 rounded p-3 my-3 overflow-x-auto"><code class="text-sm">$1</code></pre>')
+        .replace(/`([^`]+)`/g, '<code class="bg-gray-100 px-1 py-0.5 rounded text-sm font-mono">$1</code>')
+        
+        // Links
+        .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-blue-600 hover:text-blue-800 underline" target="_blank">$1</a>')
+        
+        // Lists
+        .replace(/^\* (.*$)/gim, '<li class="ml-4">$1</li>')
+        .replace(/^- (.*$)/gim, '<li class="ml-4">$1</li>')
+        .replace(/^(\d+)\. (.*$)/gim, '<li class="ml-4">$2</li>')
+        
+        // Wrap lists
+        .replace(/(<li.*<\/li>)/gs, '<ul class="list-disc space-y-1 my-3">$1</ul>')
+        
+        // Paragraphs
+        .replace(/\n\n/g, '</p><p class="my-3">')
+        .replace(/^(.+)$/gm, '<p class="my-3">$1</p>')
+        
+        // Clean up empty paragraphs
+        .replace(/<p class="my-3"><\/p>/g, '')
+        .replace(/<p class="my-3"><\/p>/g, '')
+        
+        // Fix nested lists
+        .replace(/<\/ul>\s*<ul class="list-disc space-y-1 my-3">/g, '');
+}
+
+// Tab switching functionality
+function switchTab(tabName) {
+    // Update tab buttons
+    document.querySelectorAll('.tab-button').forEach(button => {
+        button.classList.remove('border-blue-500', 'text-blue-600');
+        button.classList.add('border-transparent', 'text-gray-500');
+    });
+    
+    const activeTab = document.getElementById(tabName + '-tab');
+    activeTab.classList.remove('border-transparent', 'text-gray-500');
+    activeTab.classList.add('border-blue-500', 'text-blue-600');
+    
+    // Update tab content
+    document.querySelectorAll('.tab-content').forEach(content => {
+        content.classList.add('hidden');
+    });
+    
+    const activeContent = document.getElementById(tabName + '-content');
+    activeContent.classList.remove('hidden');
+    
+    // Render markdown preview if switching to preview tab
+    if (tabName === 'preview') {
+        const markdownText = document.getElementById('generated-description').textContent;
+        const previewElement = document.querySelector('.markdown-preview');
+        previewElement.innerHTML = renderMarkdown(markdownText);
+    }
+}
+</script> 

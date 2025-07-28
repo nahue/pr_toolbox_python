@@ -1,0 +1,47 @@
+<!-- PR Description Content -->
+<div class="bg-white shadow rounded-lg">
+    <div class="px-4 py-5 sm:p-6">
+        <h2 class="text-lg font-semibold text-gray-900 mb-6">Generate PR Description</h2>
+        <form hx-post="/generate-pr-description" hx-target="#pr-description-result" hx-swap="innerHTML" hx-indicator="#loading-indicator" class="space-y-6">
+            <div>
+                <label for="pr-url" class="block text-sm font-medium leading-6 text-gray-900">GitHub PR URL</label>
+                <div class="mt-2">
+                    <div class="flex rounded-md shadow-sm">
+                        <input type="url" 
+                               id="pr-url" 
+                               name="pr_url" 
+                               required
+                               class="block w-full rounded-l-md border-0 py-3 px-4 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
+                               placeholder="https://github.com/owner/repo/pull/123">
+                        <button type="submit" 
+                                class="relative -ml-px inline-flex items-center gap-x-1.5 rounded-r-md px-3 py-3 text-sm font-semibold text-white bg-blue-600 ring-1 ring-inset ring-blue-600 hover:bg-blue-700 focus:z-10 focus:outline-none focus:ring-2 focus:ring-blue-600">
+                            <svg class="-ml-0.5 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                            </svg>
+                            Generate
+                        </button>
+                    </div>
+                </div>
+                <p class="mt-2 text-sm text-gray-500">Enter a GitHub pull request URL to automatically fetch details and generate a description</p>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Loading Indicator -->
+<div id="loading-indicator" class="htmx-indicator mt-6">
+    <div class="bg-white shadow rounded-lg p-6">
+        <div class="flex items-center justify-center space-x-3">
+            <svg class="animate-spin h-6 w-6 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span class="text-gray-700 font-medium">Generating PR description...</span>
+        </div>
+    </div>
+</div>
+
+<!-- Loading and Result Area -->
+<div id="pr-description-result" class="space-y-4">
+    <!-- Results will be loaded here via HTMX -->
+</div> 
