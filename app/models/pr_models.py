@@ -28,6 +28,23 @@ class PRDescriptionResponse(BaseModel):
     github_data: Dict
 
 
+class PRReviewRequest(BaseModel):
+    """Request model for PR review generation."""
+    pr_url: str
+
+
+class PRReviewResponse(BaseModel):
+    """Response model for generated PR review."""
+    title: str
+    repository: str
+    pr_type: str
+    priority: str
+    assignee: str
+    review_analysis: str
+    review_score: int
+    github_data: Dict
+
+
 class GitHubPRData(BaseModel):
     """Model for GitHub PR data structure."""
     title: str

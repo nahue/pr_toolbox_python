@@ -8,9 +8,10 @@ from pydantic import BaseModel
 from fasthx import Jinja
 
 # Import from our modular structure
-from app.models.pr_models import User, PRDescriptionRequest, PRDescriptionResponse
+from app.models.pr_models import User, PRDescriptionRequest, PRDescriptionResponse, PRReviewRequest, PRReviewResponse
 from app.services.github_service import parse_github_pr_url, fetch_github_pr_data
 from app.services.openai_service import generate_pr_description_with_openai
+from app.services.pr_review_service import generate_pr_review_with_openai
 from app.utils.pr_classifier import analyze_pr_data
 
 # Load environment variables from .env file
@@ -32,37 +33,31 @@ jinja = Jinja(templates)
 @jinja.hx("pr-description/pr-description-result.html", no_data=True)
 def generate_pr_description(pr_url: str = Form(...)) -> PRDescriptionResponse:
     """Generate PR description from GitHub URL."""
-    try:
-        # Parse the GitHub PR URL
-        owner, repo, pr_number = parse_github_pr_url(pr_url)
+    # Parse GitHub PR URL
+    owner, repo, pr_number = parse_github_pr_url(pr_url)
+    
+    # Fetch PR data from GitHub
+    github_data = fetch_github_pr_data(owner, repo, pr_number)
+    
+    # Generate AI description
+    generated_description = generate_pr_description_with_openai(github_data)
+    
+    # Determine PR type and priority based on labels
+    metadata = analyze_pr_data(github_data)
+    pr_type = metadata["pr_type"]
+    priority = metadata["priority"]
+    assignee = metadata["assignee"]
 
-        # Fetch data from GitHub
-        github_data = fetch_github_pr_data(owner, repo, pr_number)
-
-        # Generate description with OpenAI
-        generated_description = generate_pr_description_with_openai(github_data)
-
-        # Determine PR type and priority based on labels
-        metadata = analyze_pr_data(github_data)
-        pr_type = metadata["pr_type"]
-        priority = metadata["priority"]
-        assignee = metadata["assignee"]
-
-        return PRDescriptionResponse(
-            title=github_data["title"],
-            repository=f"{owner}/{repo}",
-            description=github_data.get("body", ""),
-            pr_type=pr_type,
-            priority=priority,
-            assignee=assignee,
-            generated_description=generated_description,
-            github_data=github_data,
-        )
-
-    except Exception as e:
-        raise HTTPException(
-            status_code=500, detail=f"Error generating PR description: {str(e)}"
-        )
+    return PRDescriptionResponse(
+        title=github_data.get("title", "Unknown PR"),
+        repository=github_data.get("repository", "Unknown repository"),
+        description=github_data.get("body", ""),
+        pr_type=pr_type,
+        priority=priority,
+        assignee=assignee,
+        generated_description=generated_description,
+        github_data=github_data,
+    )
 
 
 @app.get("/user-list")
@@ -107,6 +102,49 @@ def pr_description(request: Request) -> Response:
     else:
         # Return full page for regular requests
         return templates.TemplateResponse("pr-description/pr-description.html", {"request": request})
+
+
+@app.get("/pr-review")
+def pr_review(request: Request) -> Response:
+    """This route serves the pr-review.html template."""
+    # Check if this is an HTMX request
+    if request.headers.get("HX-Request"):
+        # Return partial content for HTMX requests (just the main content)
+        return templates.TemplateResponse("pr-review/pr-review-content.html", {"request": request})
+    else:
+        # Return full page for regular requests
+        return templates.TemplateResponse("pr-review/pr-review.html", {"request": request})
+
+
+@app.post("/generate-pr-review")
+@jinja.hx("pr-review/pr-review-result.html", no_data=True)
+def generate_pr_review(pr_url: str = Form(...)) -> PRReviewResponse:
+    """Generate PR review from GitHub URL."""
+    # Parse GitHub PR URL
+    owner, repo, pr_number = parse_github_pr_url(pr_url)
+    
+    # Fetch PR data from GitHub
+    github_data = fetch_github_pr_data(owner, repo, pr_number)
+    
+    # Generate AI review
+    review_analysis, review_score = generate_pr_review_with_openai(github_data)
+    
+    # Determine PR type and priority based on labels
+    metadata = analyze_pr_data(github_data)
+    pr_type = metadata["pr_type"]
+    priority = metadata["priority"]
+    assignee = metadata["assignee"]
+
+    return PRReviewResponse(
+        title=github_data.get("title", "Unknown PR"),
+        repository=github_data.get("repository", "Unknown repository"),
+        pr_type=pr_type,
+        priority=priority,
+        assignee=assignee,
+        review_analysis=review_analysis,
+        review_score=review_score,
+        github_data=github_data,
+    )
 
 
 if __name__ == "__main__":

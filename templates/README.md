@@ -15,6 +15,10 @@ templates/
 │   ├── pr-description.html   # PR Description full page (extends base)
 │   ├── pr-description-content.html # PR Description partial (HTMX)
 │   └── pr-description-result.html  # PR Description result display
+├── pr-review/                # PR Review module templates
+│   ├── pr-review.html        # PR Review full page (extends base)
+│   ├── pr-review-content.html # PR Review partial (HTMX)
+│   └── pr-review-result.html  # PR Review result display
 └── user/                     # User module templates
     └── user-list.html        # User list partial template
 ```
@@ -98,6 +102,18 @@ return templates.TemplateResponse("pr-description/pr-description-content.html", 
 
 # HTMX result
 @jinja.hx("pr-description/pr-description-result.html")
+```
+
+### PR Review Module
+```python
+# Full page load
+return templates.TemplateResponse("pr-review/pr-review.html", {"request": request})
+
+# HTMX request
+return templates.TemplateResponse("pr-review/pr-review-content.html", {"request": request})
+
+# HTMX result
+@jinja.hx("pr-review/pr-review-result.html")
 ```
 
 ## Adding New Templates
