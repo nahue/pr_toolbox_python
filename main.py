@@ -48,10 +48,14 @@ def generate_pr_description(pr_url: str = Form(...)) -> PRDescriptionResponse:
     priority = metadata["priority"]
     assignee = metadata["assignee"]
 
+    body = github_data.get("body", "")
+    if not body:
+        body = ""
+
     return PRDescriptionResponse(
         title=github_data.get("title", "Unknown PR"),
         repository=github_data.get("repository", "Unknown repository"),
-        description=github_data.get("body", ""),
+        description=body,
         pr_type=pr_type,
         priority=priority,
         assignee=assignee,

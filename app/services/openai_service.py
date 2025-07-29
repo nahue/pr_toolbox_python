@@ -67,6 +67,20 @@ def _build_pr_description_prompt(pr_data: Dict) -> str:
     additions = pr_data.get("additions", 0)
     deletions = pr_data.get("deletions", 0)
     repository = pr_data.get("repository", "Unknown repository")
+    contributors = pr_data.get("contributors", [])
+    
+    # Format contributors information
+    contributors_info = ""
+    if contributors:
+        contributors_list = []
+        for contributor in contributors:
+            login = contributor.get("login", "")
+            name = contributor.get("name", login)
+            contributions = contributor.get("contributions", 0)
+            contributors_list.append(f"@{login} ({name}) - {contributions} commit{'s' if contributions != 1 else ''}")
+        contributors_info = "\n".join(contributors_list)
+    else:
+        contributors_info = "No contributors found"
     
     prompt = f"""Please create a comprehensive, professional pull request description based on the following GitHub PR data:
 
@@ -78,6 +92,8 @@ def _build_pr_description_prompt(pr_data: Dict) -> str:
 **Files Changed:** {changed_files}
 **Additions:** {additions} lines
 **Deletions:** {deletions} lines
+**Contributors:**
+{contributors_info}
 
 Please structure the description with the following sections:
 1. **Summary** - Brief overview of what the PR accomplishes
@@ -85,8 +101,9 @@ Please structure the description with the following sections:
 3. **Testing** - Information about testing performed
 4. **Screenshots** (if applicable) - Visual changes
 5. **Additional Notes** - Any other relevant information
+6. **Contributors** - List of contributors to the PR with their contribution counts
 
-Make the description clear, professional, and helpful for code reviewers. Focus on the "why" and "what" of the changes."""
+Make the description clear, professional, and helpful for code reviewers. Focus on the "why" and "what" of the changes. Include the contributors section to acknowledge all team members who contributed to this PR."""
     
     return prompt
 
@@ -95,6 +112,20 @@ def _get_mock_description(pr_data: Dict) -> str:
     """Return a mock description for testing or when OpenAI API key is not available."""
     title = pr_data.get("title", "Unknown PR")
     repository = pr_data.get("repository", "Unknown repository")
+    contributors = pr_data.get("contributors", [])
+    
+    # Format contributors for mock description
+    contributors_section = ""
+    if contributors:
+        contributors_list = []
+        for contributor in contributors:
+            login = contributor.get("login", "")
+            name = contributor.get("name", login)
+            contributions = contributor.get("contributions", 0)
+            contributors_list.append(f"- @{login} ({name}) - {contributions} commit{'s' if contributions != 1 else ''}")
+        contributors_section = "\n".join(contributors_list)
+    else:
+        contributors_section = "- No contributors found"
     
     return f"""## Summary
 This pull request {title.lower()} in the {repository} repository.
@@ -109,24 +140,14 @@ This pull request {title.lower()} in the {repository} repository.
 - Manual testing completed
 - Integration tests passing
 
-## Additional Notes
-This is a sample description generated when OpenAI API is not available. Please configure your OpenAI API key for AI-powered descriptions."""
-    
-    return f"""## Summary
-This pull request {title.lower()} in the {repository} repository.
-
-## Changes Made
-- Sample changes and improvements
-- Code refactoring and optimization
-- Bug fixes and enhancements
-
-## Testing
-- Unit tests have been added/updated
-- Manual testing completed
-- Integration tests passing
+## Screenshots
+N/A
 
 ## Additional Notes
-This is a sample description generated when OpenAI API is not available. Please configure your OpenAI API key for AI-powered descriptions."""
+This is a sample description generated when OpenAI API is not available. Please configure your OpenAI API key for AI-powered descriptions.
+
+## Contributors
+{contributors_section}"""
 
 
 def _get_error_description(error_message: str) -> str:
@@ -142,5 +163,11 @@ Please review the original PR description and manually create a comprehensive de
 - Run existing test suite
 - Perform manual testing
 
+## Screenshots
+N/A
+
 ## Additional Notes
-The AI description generation failed. Please check your API configuration and try again.""" 
+The AI description generation failed. Please check your API configuration and try again.
+
+## Contributors
+Please manually review the PR commits to identify all contributors.""" 

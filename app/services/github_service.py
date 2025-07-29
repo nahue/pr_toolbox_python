@@ -5,7 +5,7 @@ import os
 import requests
 from urllib.parse import urlparse
 from fastapi import HTTPException
-from typing import Dict, Tuple
+from typing import Dict, Tuple, List
 
 
 def parse_github_pr_url(url: str) -> Tuple[str, str, int]:
@@ -53,6 +53,7 @@ def fetch_github_pr_data(owner: str, repo: str, pr_number: int) -> Dict:
         # Fetch additional data
         labels = _fetch_pr_labels(owner, repo, pr_number, headers)
         files_changed = _fetch_pr_files(owner, repo, pr_number, headers)
+        contributors = _fetch_pr_contributors(owner, repo, pr_number, headers)
 
         return {
             "title": pr_data.get("title", "Unknown PR"),
@@ -68,6 +69,7 @@ def fetch_github_pr_data(owner: str, repo: str, pr_number: int) -> Dict:
             "deletions": pr_data.get("deletions", 0),
             "repository": f"{owner}/{repo}",
             "pr_number": pr_number,
+            "contributors": contributors,
         }
 
     except requests.exceptions.RequestException as e:
@@ -98,6 +100,56 @@ def _fetch_pr_files(owner: str, repo: str, pr_number: int, headers: Dict) -> int
         return 0
 
 
+def _fetch_pr_contributors(owner: str, repo: str, pr_number: int, headers: Dict) -> List[Dict]:
+    """Fetch PR commits and extract unique contributors."""
+    try:
+        url = f"https://api.github.com/repos/{owner}/{repo}/pulls/{pr_number}/commits"
+        response = requests.get(url, headers=headers, timeout=10)
+        response.raise_for_status()
+        commits = response.json()
+        
+        # Extract unique contributors from commits
+        contributors = {}
+        for commit in commits:
+            author = commit.get("author")
+            committer = commit.get("committer")
+            
+            # Add author if available and not None
+            if author and author.get("login"):
+                login = author["login"]
+                if login not in contributors:
+                    contributors[login] = {
+                        "login": login,
+                        "name": author.get("name", login),
+                        "email": author.get("email", ""),
+                        "avatar_url": author.get("avatar_url", ""),
+                        "contributions": 0
+                    }
+                contributors[login]["contributions"] += 1
+            
+            # Add committer if different from author
+            if committer and committer.get("login") and committer.get("login") != author.get("login"):
+                login = committer["login"]
+                if login not in contributors:
+                    contributors[login] = {
+                        "login": login,
+                        "name": committer.get("name", login),
+                        "email": committer.get("email", ""),
+                        "avatar_url": committer.get("avatar_url", ""),
+                        "contributions": 0
+                    }
+                contributors[login]["contributions"] += 1
+        
+        # Convert to list and sort by contributions
+        contributors_list = list(contributors.values())
+        contributors_list.sort(key=lambda x: x["contributions"], reverse=True)
+        
+        return contributors_list
+        
+    except requests.exceptions.RequestException:
+        return []
+
+
 def _get_mock_pr_data(owner: str, repo: str, pr_number: int) -> Dict:
     """Return mock PR data for testing or when GitHub token is not available."""
     return {
@@ -114,4 +166,20 @@ def _get_mock_pr_data(owner: str, repo: str, pr_number: int) -> Dict:
         "deletions": 20,
         "repository": f"{owner}/{repo}",
         "pr_number": pr_number,
+        "contributors": [
+            {
+                "login": "sample-user",
+                "name": "Sample User",
+                "email": "sample@example.com",
+                "avatar_url": "https://github.com/github.png",
+                "contributions": 3
+            },
+            {
+                "login": "contributor-user",
+                "name": "Contributor User",
+                "email": "contributor@example.com",
+                "avatar_url": "https://github.com/github.png",
+                "contributions": 1
+            }
+        ],
     } 

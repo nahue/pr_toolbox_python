@@ -6,6 +6,7 @@ A modern web application for generating AI-powered pull request descriptions usi
 
 - **AI-Powered PR Descriptions**: Generate comprehensive PR descriptions using OpenAI
 - **GitHub Integration**: Fetch real PR data from GitHub repositories
+- **Contributors Analysis**: Automatically gather and display all contributors from PR commits
 - **Modern UI**: Built with FastAPI, HTMX, and Tailwind CSS
 - **Responsive Design**: Works on desktop and mobile devices
 - **Real-time Updates**: HTMX-powered dynamic content loading
@@ -94,6 +95,8 @@ LOG_LEVEL=INFO
 4. **Generate Description**: Click "Generate" to fetch PR data and create an AI-powered description
 
 5. **View Results**: The generated description will appear with options to copy, save, or regenerate
+   - **Contributors**: All contributors from PR commits are automatically gathered and displayed
+   - **AI Description**: Includes a dedicated contributors section with contribution counts
 
 ## API Endpoints
 
@@ -110,6 +113,7 @@ LOG_LEVEL=INFO
 - **GitHub Service** (`app/services/github_service.py`): Handles GitHub API interactions
   - `parse_github_pr_url()`: Parse GitHub PR URLs
   - `fetch_github_pr_data()`: Fetch PR data from GitHub API
+  - `_fetch_pr_contributors()`: Extract contributors from PR commits
   - Mock data fallback when GitHub token is not available
 
 - **OpenAI Service** (`app/services/openai_service.py`): Handles OpenAI API interactions
