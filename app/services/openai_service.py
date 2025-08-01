@@ -96,13 +96,15 @@ def _build_pr_description_prompt(pr_data: Dict) -> str:
 {contributors_info}
 
 Please structure the description with the following sections:
-1. **Summary** - Brief overview of what the PR accomplishes
-2. **Changes Made** - Detailed list of changes and improvements
-3. **Testing** - Information about testing performed
-4. **Screenshots** (if applicable) - Visual changes
-5. **Additional Notes** - Any other relevant information
-6. **Contributors** - List of contributors to the PR with their contribution counts
+1. **Summary** - A brief, high-level overview of the purpose of this pull request.
+2. **Changes Made** - A clear and itemized list of the specific modifications made in this PR.
+3. **Motivation/Context:** Explain *why* these changes were necessary (e.g., bug fix, new feature, refactoring, performance improvement).
+4. **How to Test (Optional but Recommended):** Provide instructions for how a reviewer can verify the changes.
+5. **Potential Impacts/Considerations:** Mention any known side effects, performance implications, or areas that require particular attention during review.
+6. **Relevant Links (Optional):** Include links to related issues, design documents, or external resources.
+7. **Contributors** - List of contributors to the PR with their contribution counts
 
+Ensure the description is easy to read, uses clear language, and is formatted for readability (e.g., bullet points, headings).
 Make the description clear, professional, and helpful for code reviewers. Focus on the "why" and "what" of the changes. Include the contributors section to acknowledge all team members who contributed to this PR."""
     
     return prompt
